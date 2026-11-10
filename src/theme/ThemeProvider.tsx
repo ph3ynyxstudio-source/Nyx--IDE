@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 
-export type ThemeName = "carbon";
+export type ThemeName = "carbon" | "stellar";
 
 interface ThemeContextValue {
   theme: ThemeName;
@@ -12,15 +12,27 @@ const ThemeContext = createContext<ThemeContextValue>({
   setTheme: () => {},
 });
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<ThemeName>("carbon");
+export interface ThemeProviderProps {
+  theme: ThemeName;
+  onChangeTheme: (theme: ThemeName) => void;
+  children: React.ReactNode;
+}
 
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  theme,
+  onChangeTheme,
+  children,
+}) => {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    const rootEl = document.getElementById("root");
+    if (rootEl) {
+      rootEl.className = theme === "stellar" ? "theme-stellar" : "theme-carbon";
+    }
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme: onChangeTheme }}>
       {children}
     </ThemeContext.Provider>
   );

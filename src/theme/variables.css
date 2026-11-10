@@ -1,5 +1,6 @@
 :root,
-html[data-theme="carbon"] {
+html[data-theme="carbon"],
+.theme-carbon {
   --bg-app: #030611;
   --bg-carbon: #0a0d14;
   --bg-card: rgba(8, 14, 28, 0.65);
@@ -8,4 +9,18 @@ html[data-theme="carbon"] {
   --text-main: #d6dbe3;
   --accent-pin: #38a169;
   --accent-warn: #d69e2e;
+  --accent-blue: #3b82f6;
+}
+
+html[data-theme="stellar"],
+.theme-stellar {
+  --bg-app: #06080f;
+  --bg-carbon: rgba(10, 13, 20, 0.55);
+  --bg-card: rgba(8, 14, 28, 0.72);
+  --bg-panel: rgba(7, 19, 31, 0.55);
+  --bg-topbar: rgba(5, 8, 20, 0.75);
+  --text-main: #d6dbe3;
+  --accent-pin: #38a169;
+  --accent-warn: #d69e2e;
+  --accent-blue: #3b82f6;
 }

@@ -2,7 +2,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   height: 100%;
   background-color: var(--bg-panel);
   padding: 18px 16px;
@@ -10,35 +10,74 @@
 }
 
 .card {
-  padding: 14px;
+  padding: 16px;
   border-radius: 14px;
   background-color: var(--bg-card);
   border: 1px solid color-mix(in srgb, var(--text-main) 10%, transparent);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .cardTitle {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: color-mix(in srgb, var(--text-main) 65%, transparent);
 }
 
+.themeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.themeOptionBtn {
+  min-height: 54px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background-color: var(--bg-carbon);
+  border: 1px solid color-mix(in srgb, var(--text-main) 14%, transparent);
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.1s ease;
+}
+
+.themeOptionBtn:active {
+  transform: scale(0.98);
+}
+
+.themeActive {
+  border-color: var(--accent-pin);
+  background-color: color-mix(in srgb, var(--accent-pin) 16%, transparent);
+}
+
+.themeSub {
+  font-size: 11px;
+  font-weight: 400;
+  color: color-mix(in srgb, var(--text-main) 60%, transparent);
+}
+
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 13px;
+  min-height: 40px;
+  font-size: 14px;
   color: var(--text-main);
 }
 
 .badge {
-  font-size: 11px;
+  font-size: 12px;
   font-family: "JetBrains Mono", "Fira Code", monospace;
-  padding: 3px 8px;
+  padding: 6px 12px;
   border-radius: 8px;
   background-color: color-mix(in srgb, var(--accent-pin) 18%, transparent);
   color: var(--accent-pin);

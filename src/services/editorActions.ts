@@ -1,4 +1,4 @@
-import { EditorView } from "@codemirror/view";
+import { EditorView } from "@uiw/react-codemirror";
 import { findSmartBlockRange } from "./mockFileSystem";
 
 export function selectSmartBlockInEditor(

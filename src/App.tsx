@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { ThemeProvider } from "./theme/ThemeProvider";
+import { ThemeProvider, ThemeName } from "./theme/ThemeProvider";
 import { TopBar, ActiveTab } from "./components/TopBar";
 import { FileTree } from "./components/FileTree";
 import { CodeEditor } from "./components/CodeEditor";
@@ -29,6 +29,7 @@ import {
 import "./App.css";
 
 export function App() {
+  const [activeTheme, setActiveTheme] = useState<ThemeName>("carbon");
   const [activeTab, setActiveTab] = useState<ActiveTab>("editor");
   const [fileTree, setFileTree] = useState<FileNode[]>(INITIAL_FILE_TREE);
   const [activeFileId, setActiveFileId] = useState<string>("file-app-tsx");
@@ -42,6 +43,23 @@ export function App() {
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
   const activeFile = findFileById(fileTree, activeFileId) ?? INITIAL_FILE_TREE[1].children![2];
 
+  useEffect(() => {
+    window.history.replaceState({ tab: "editor" }, "");
+    const onPopState = (e: PopStateEvent) => {
+      const nextTab = (e.state?.tab as ActiveTab) || "editor";
+      setActiveTab(nextTab);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const navigateTab = (tab: ActiveTab) => {
+    if (tab !== activeTab) {
+      window.history.pushState({ tab }, "");
+      setActiveTab(tab);
+    }
+  };
+
   const notifyIsland = (msg: string) => {
     setIslandFeedback(msg);
     window.setTimeout(() => setIslandFeedback(null), 1400);
@@ -53,14 +71,14 @@ export function App() {
 
   const handleSelectFile = (fileId: string) => {
     setActiveFileId(fileId);
-    setActiveTab("editor");
+    navigateTab("editor");
     const chosen = findFileById(fileTree, fileId);
     if (chosen) pushLog("FS", `Opened ${chosen.path}`);
   };
 
   return (
-    <ThemeProvider>
-      <TopBar activeTab={activeTab} onSelectTab={setActiveTab} />
+    <ThemeProvider theme={activeTheme} onChangeTheme={setActiveTheme}>
+      <TopBar activeTab={activeTab} onSelectTab={navigateTab} />
 
       {activeTab === "explorer" && (
         <FileTree
@@ -147,6 +165,8 @@ export function App() {
 
       {activeTab === "settings" && (
         <SettingsView
+          activeTheme={activeTheme}
+          onSelectTheme={setActiveTheme}
           isIslandPinned={isIslandPinned}
           onToggleIslandPin={() => setIsIslandPinned((p) => !p)}
         />

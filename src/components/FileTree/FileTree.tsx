@@ -22,7 +22,9 @@ const TreeBranch: React.FC<TreeBranchProps> = ({
   onSelectFile,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const indentStyle: React.CSSProperties = { paddingLeft: `${10 + depth * 16}px` };
+  const indentStyle: React.CSSProperties = {
+    paddingLeft: `${16 + depth * 20}px`,
+  };
 
   if (node.type === "folder") {
     return (

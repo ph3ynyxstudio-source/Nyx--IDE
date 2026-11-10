@@ -11,9 +11,10 @@
 
 html,
 body {
-  width: 100%;
+  width: 100vw;
   height: 100dvh;
   overflow: hidden;
+  overflow-x: hidden;
   background-color: var(--bg-app);
   color: var(--text-main);
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -24,17 +25,28 @@ body {
 }
 
 #root {
-  width: 100%;
-  max-width: 412px;
+  width: 100vw;
   height: 100dvh;
-  margin: 0 auto;
   overflow: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
   background-color: var(--bg-app);
-  border-left: 1px solid color-mix(in srgb, var(--text-main) 8%, transparent);
-  border-right: 1px solid color-mix(in srgb, var(--text-main) 8%, transparent);
+}
+
+.theme-carbon {
+  background-color: var(--bg-app);
+}
+
+.theme-stellar {
+  background-color: #06080f;
+  background-image:
+    url('./etoiles-nyx.svg'),
+    radial-gradient(circle at 80% 10%, rgba(124, 92, 255, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 15% 85%, rgba(56, 189, 248, 0.08) 0%, transparent 45%);
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size: 200px 200px, 100% 100%, 100% 100%;
 }
 
 button,

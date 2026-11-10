@@ -44,12 +44,12 @@
   flex: 1;
   overflow: auto;
   padding-bottom: 110px;
-  background-color: var(--bg-carbon);
+  background-color: transparent;
 }
 
 .cmWrapper :global(.cm-editor) {
   height: 100%;
-  background-color: var(--bg-carbon) !important;
+  background-color: transparent !important;
   color: var(--text-main);
   font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 13px;
@@ -61,7 +61,7 @@
 }
 
 .cmWrapper :global(.cm-gutters) {
-  background-color: var(--bg-carbon) !important;
+  background-color: transparent !important;
   border-right: 1px solid color-mix(in srgb, var(--text-main) 6%, transparent) !important;
   color: color-mix(in srgb, var(--text-main) 35%, transparent) !important;
 }
