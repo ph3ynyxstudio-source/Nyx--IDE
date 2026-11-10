@@ -1,0 +1,76 @@
+.editorContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-carbon);
+  position: relative;
+}
+
+.fileBanner {
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid color-mix(in srgb, var(--text-main) 8%, transparent);
+}
+
+.filePath {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 12px;
+  color: var(--text-main);
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.langBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background-color: color-mix(in srgb, var(--accent-pin) 18%, transparent);
+  color: var(--accent-pin);
+  letter-spacing: 0.05em;
+}
+
+.cmWrapper {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 110px;
+  background-color: var(--bg-carbon);
+}
+
+.cmWrapper :global(.cm-editor) {
+  height: 100%;
+  background-color: var(--bg-carbon) !important;
+  color: var(--text-main);
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 13px;
+}
+
+.cmWrapper :global(.cm-scroller) {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  line-height: 1.6;
+}
+
+.cmWrapper :global(.cm-gutters) {
+  background-color: var(--bg-carbon) !important;
+  border-right: 1px solid color-mix(in srgb, var(--text-main) 6%, transparent) !important;
+  color: color-mix(in srgb, var(--text-main) 35%, transparent) !important;
+}
+
+.cmWrapper :global(.cm-activeLineGutter),
+.cmWrapper :global(.cm-activeLine) {
+  background-color: color-mix(in srgb, var(--bg-panel) 65%, transparent) !important;
+}
+
+.cmWrapper :global(.cm-selectionBackground) {
+  background-color: color-mix(in srgb, var(--accent-warn) 28%, transparent) !important;
+}

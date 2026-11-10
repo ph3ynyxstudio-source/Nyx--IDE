@@ -1,0 +1,45 @@
+.settingsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  background-color: var(--bg-panel);
+  padding: 18px 16px;
+  overflow-y: auto;
+}
+
+.card {
+  padding: 14px;
+  border-radius: 14px;
+  background-color: var(--bg-card);
+  border: 1px solid color-mix(in srgb, var(--text-main) 10%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--text-main) 65%, transparent);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.badge {
+  font-size: 11px;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background-color: color-mix(in srgb, var(--accent-pin) 18%, transparent);
+  color: var(--accent-pin);
+}

@@ -1,0 +1,145 @@
+.island {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  z-index: 30;
+  background-color: var(--bg-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.anchoredState {
+  border: 1px solid color-mix(in srgb, var(--accent-pin) 50%, transparent);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--bg-app) 85%, transparent);
+}
+
+.freeState {
+  right: auto;
+  bottom: auto;
+  width: calc(100% - 32px);
+  max-width: 380px;
+  border: 1px solid color-mix(in srgb, var(--accent-warn) 75%, transparent);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--bg-app) 92%, transparent);
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 22px;
+}
+
+.statusLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text-main) 65%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dragHandle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--accent-warn) 18%, transparent);
+  color: var(--accent-warn);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: grab;
+  touch-action: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.gripDots {
+  width: 14px;
+  height: 14px;
+}
+
+.pinButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  margin-left: auto;
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.pinButton:active {
+  transform: scale(0.93);
+}
+
+.pinned {
+  color: var(--accent-pin);
+  background-color: color-mix(in srgb, var(--accent-pin) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-pin) 45%, transparent);
+}
+
+.unpinned {
+  color: var(--accent-warn);
+  background-color: color-mix(in srgb, var(--accent-warn) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-warn) 50%, transparent);
+}
+
+.pinDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.pinIcon {
+  width: 13px;
+  height: 13px;
+}
+
+.actionsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.actionBtn {
+  height: 38px;
+  border-radius: 11px;
+  background-color: color-mix(in srgb, var(--bg-carbon) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-main) 12%, transparent);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.actionBtn:hover {
+  border-color: color-mix(in srgb, var(--text-main) 28%, transparent);
+  background-color: var(--bg-panel);
+}
+
+.actionBtn:active {
+  transform: scale(0.96);
+}
+
+.mono {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  letter-spacing: -0.02em;
+}

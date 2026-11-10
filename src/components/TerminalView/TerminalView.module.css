@@ -1,0 +1,70 @@
+.terminalContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-carbon);
+  padding: 14px 12px;
+  overflow-y: auto;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-main) 10%, transparent);
+}
+
+.title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--text-main) 65%, transparent);
+}
+
+.clearBtn {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: var(--accent-warn);
+  background-color: color-mix(in srgb, var(--accent-warn) 14%, transparent);
+}
+
+.logList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.logLine {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.45;
+}
+
+.time {
+  color: color-mix(in srgb, var(--text-main) 42%, transparent);
+  flex-shrink: 0;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--accent-pin) 18%, transparent);
+  color: var(--accent-pin);
+  flex-shrink: 0;
+}
+
+.msg {
+  color: var(--text-main);
+  word-break: break-word;
+}

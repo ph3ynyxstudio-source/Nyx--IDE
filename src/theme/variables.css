@@ -1,0 +1,11 @@
+:root,
+html[data-theme="carbon"] {
+  --bg-app: #030611;
+  --bg-carbon: #0a0d14;
+  --bg-card: rgba(8, 14, 28, 0.65);
+  --bg-panel: #07131f;
+  --bg-topbar: #050814;
+  --text-main: #d6dbe3;
+  --accent-pin: #38a169;
+  --accent-warn: #d69e2e;
+}
