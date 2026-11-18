@@ -26,6 +26,7 @@ import {
   TerminalLog,
   createLog,
 } from "./services/mockGitHubService";
+import { loadGithubToken, saveGithubToken, clearGithubToken } from "./services/githubAuth";
 import "./App.css";
 
 export function App() {
@@ -37,6 +38,7 @@ export function App() {
   const [isKeyboardOpen, setIsKeyboardOpen] = useState<boolean>(false);
   const [islandFeedback, setIslandFeedback] = useState<string | null>(null);
   const [clipboardText, setClipboardText] = useState<string>("");
+  const [githubToken, setGithubToken] = useState<string | null>(() => loadGithubToken());
   const [commitMessage, setCommitMessage] = useState<string>("");
   const [buildStatus, setBuildStatus] = useState<BuildStatus>("Ready");
   const [logs, setLogs] = useState<TerminalLog[]>(INITIAL_LOGS);
@@ -75,6 +77,20 @@ export function App() {
     navigateTab("editor");
     const chosen = findFileById(fileTree, fileId);
     if (chosen) pushLog("FS", `Opened ${chosen.path}`);
+  };
+
+  const handleConnect = (token: string) => {
+    const saved = saveGithubToken(token);
+    if (saved) {
+      setGithubToken(saved);
+      pushLog("GIT", "GitHub account linked (PAT stored locally).");
+    }
+  };
+
+  const handleDisconnect = () => {
+    clearGithubToken();
+    setGithubToken(null);
+    pushLog("GIT", "GitHub account unlinked.");
   };
 
   const handleToggleKeyboard = () => {
@@ -149,6 +165,9 @@ export function App() {
 
       {activeTab === "github" && (
         <GitHubPanel
+          isConnected={githubToken !== null}
+          onConnect={handleConnect}
+          onDisconnect={handleDisconnect}
           commitMessage={commitMessage}
           onChangeCommitMessage={setCommitMessage}
           buildStatus={buildStatus}

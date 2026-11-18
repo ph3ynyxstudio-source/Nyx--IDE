@@ -1,5 +1,6 @@
 import React from "react";
 import { BuildStatus } from "../../services/mockGitHubService";
+import { GitHubLoginView } from "./GitHubLoginView";
 import styles from "./GitHubPanel.module.css";
 
 export interface GitHubPanelProps {
@@ -10,9 +11,15 @@ export interface GitHubPanelProps {
   onCommit: () => void;
   onPush: () => void;
   onBuildApk: () => void;
+  isConnected: boolean;
+  onConnect: (token: string) => void;
+  onDisconnect: () => void;
 }
 
 export const GitHubPanel: React.FC<GitHubPanelProps> = ({
+  isConnected,
+  onConnect,
+  onDisconnect,
   commitMessage,
   onChangeCommitMessage,
   buildStatus,
@@ -21,8 +28,16 @@ export const GitHubPanel: React.FC<GitHubPanelProps> = ({
   onPush,
   onBuildApk,
 }) => {
+  if (!isConnected) {
+    return <GitHubLoginView onConnect={onConnect} />;
+  }
+
   return (
     <section className={styles.githubPanel} aria-label="Contrôle de version GitHub">
+      <button type="button" className={styles.logoutBtn} onClick={onDisconnect}>
+        Déconnexion
+      </button>
+
       <div className={styles.headerCard}>
         <div className={styles.repoInfo}>
           <span className={styles.repoTitle}>Ph3yNyx / nyx-ide</span>
