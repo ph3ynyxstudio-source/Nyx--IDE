@@ -34,6 +34,7 @@ export function App() {
   const [fileTree, setFileTree] = useState<FileNode[]>(INITIAL_FILE_TREE);
   const [activeFileId, setActiveFileId] = useState<string>("file-app-tsx");
   const [isIslandPinned, setIsIslandPinned] = useState<boolean>(true);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState<boolean>(false);
   const [islandFeedback, setIslandFeedback] = useState<string | null>(null);
   const [clipboardText, setClipboardText] = useState<string>("");
   const [commitMessage, setCommitMessage] = useState<string>("");
@@ -76,6 +77,20 @@ export function App() {
     if (chosen) pushLog("FS", `Opened ${chosen.path}`);
   };
 
+  const handleToggleKeyboard = () => {
+    setIsKeyboardOpen((prev) => {
+      const next = !prev;
+      notifyIsland(next ? "Clavier activé" : "Clavier masqué");
+      if (next) {
+        // Donne le focus pour déclencher l'ouverture du clavier virtuel
+        setTimeout(() => {
+          editorRef.current?.view?.focus();
+        }, 50);
+      }
+      return next;
+    });
+  };
+
   return (
     <ThemeProvider theme={activeTheme} onChangeTheme={setActiveTheme}>
       <TopBar activeTab={activeTab} onSelectTab={navigateTab} />
@@ -98,6 +113,7 @@ export function App() {
               setFileTree((prev) => updateFileContent(prev, activeFile.id, code))
             }
             editorRef={editorRef}
+            isKeyboardOpen={isKeyboardOpen}
           />
           <FloatingIsland
             isPinned={isIslandPinned}
@@ -124,6 +140,8 @@ export function App() {
               const label = await pasteIntoEditor(editorRef.current?.view, clipboardText);
               notifyIsland(label);
             }}
+            onToggleKeyboard={handleToggleKeyboard}
+            isKeyboardOpen={isKeyboardOpen}
             feedbackText={islandFeedback}
           />
         </>

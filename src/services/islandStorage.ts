@@ -1,125 +1,131 @@
-export interface IslandLayout {
+export interface IslandPosition {
   x: number;
   y: number;
-  width?: number;
-  height?: number;
+}
+
+export type IslandLayoutMode = "wide" | "tall";
+
+export interface IslandDimensions {
+  width: number;
+  height: number;
+}
+
+export interface SafeAreaInsets {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
 }
 
 const STORAGE_KEY = "nyx-island-position";
+const LAYOUT_STORAGE_KEY = "nyx-island-layout";
 
-export const ISLAND_BOUNDS = {
-  minWidth: 280,
-  minHeight: 80,
-  maxWidthVw: 0.95,
-  maxHeightVh: 0.4,
-};
+/** Épaisseur actuelle de l'île en mode horizontal (hauteur "wide"). */
+const ISLAND_THICKNESS = 100;
+/** Marge latérale actuelle : largeur "wide" = calc(100vw - 32px). */
+const SIDE_MARGIN = 16;
+const TOPBAR_HEIGHT = 52;
+const EDGE_GAP = 8;
 
-export function loadIslandLayout(): IslandLayout | null {
+/** Lit les valeurs réelles de env(safe-area-inset-*) via un élément sonde. */
+export function getSafeAreaInsets(): SafeAreaInsets {
+  const probe = document.createElement("div");
+  probe.style.cssText =
+    "position:fixed;visibility:hidden;pointer-events:none;" +
+    "padding:env(safe-area-inset-top) env(safe-area-inset-right) " +
+    "env(safe-area-inset-bottom) env(safe-area-inset-left);";
+  document.body.appendChild(probe);
+  const cs = getComputedStyle(probe);
+  const insets = {
+    top: parseFloat(cs.paddingTop) || 0,
+    right: parseFloat(cs.paddingRight) || 0,
+    bottom: parseFloat(cs.paddingBottom) || 0,
+    left: parseFloat(cs.paddingLeft) || 0,
+  };
+  probe.remove();
+  return insets;
+}
+
+function verticalBounds(safe: SafeAreaInsets) {
+  const minY = Math.max(safe.top, 16) + TOPBAR_HEIGHT + EDGE_GAP;
+  const maxBottom = window.innerHeight - Math.max(safe.bottom, 16);
+  return { minY, maxBottom };
+}
+
+/**
+ * Mode "wide" : dimensions actuelles (largeur = 100vw - 32px, hauteur = 100px).
+ * Mode "tall" : inversion stricte (largeur <-> hauteur), bornée à la zone sûre.
+ */
+export function getIslandDimensions(
+  mode: IslandLayoutMode,
+  safe: SafeAreaInsets
+): IslandDimensions {
+  const longSide = Math.max(
+    ISLAND_THICKNESS,
+    window.innerWidth - safe.left - safe.right - SIDE_MARGIN * 2
+  );
+
+  if (mode === "wide") {
+    return { width: longSide, height: ISLAND_THICKNESS };
+  }
+
+  const { minY, maxBottom } = verticalBounds(safe);
+  return {
+    width: ISLAND_THICKNESS,
+    height: Math.max(ISLAND_THICKNESS, Math.min(longSide, maxBottom - minY)),
+  };
+}
+
+export function clampIslandPosition(
+  pos: IslandPosition,
+  dims: IslandDimensions,
+  safe: SafeAreaInsets
+): IslandPosition {
+  const minX = safe.left + EDGE_GAP;
+  const maxX = Math.max(minX, window.innerWidth - safe.right - dims.width - EDGE_GAP);
+  const { minY, maxBottom } = verticalBounds(safe);
+  const maxY = Math.max(minY, maxBottom - dims.height);
+
+  return {
+    x: Math.round(Math.max(minX, Math.min(maxX, pos.x))),
+    y: Math.round(Math.max(minY, Math.min(maxY, pos.y))),
+  };
+}
+
+export function loadIslandPosition(): IslandPosition | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (typeof parsed?.x === "number" && typeof parsed?.y === "number") {
-      return {
-        x: parsed.x,
-        y: parsed.y,
-        width: typeof parsed.width === "number" ? parsed.width : undefined,
-        height: typeof parsed.height === "number" ? parsed.height : undefined,
-      };
+      return { x: parsed.x, y: parsed.y };
     }
   } catch {
-    // Ignore invalid JSON
+    // JSON invalide : on ignore
   }
   return null;
 }
 
-export function saveIslandLayout(layout: IslandLayout): void {
+export function saveIslandPosition(pos: IslandPosition): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
   } catch {
-    // Ignore storage errors
+    // Quota / stockage indisponible : on ignore
   }
 }
 
-export function clampIslandLayout(
-  layout: IslandLayout,
-  currentWidth: number,
-  currentHeight: number
-): IslandLayout {
-  const maxW = Math.max(
-    ISLAND_BOUNDS.minWidth,
-    Math.round(window.innerWidth * ISLAND_BOUNDS.maxWidthVw)
-  );
-  const maxH = Math.max(
-    ISLAND_BOUNDS.minHeight,
-    Math.round(window.innerHeight * ISLAND_BOUNDS.maxHeightVh)
-  );
-
-  const width =
-    layout.width !== undefined
-      ? Math.round(Math.max(ISLAND_BOUNDS.minWidth, Math.min(maxW, layout.width)))
-      : undefined;
-  const height =
-    layout.height !== undefined
-      ? Math.round(Math.max(ISLAND_BOUNDS.minHeight, Math.min(maxH, layout.height)))
-      : undefined;
-
-  const effectiveW = width ?? currentWidth;
-  const effectiveH = height ?? currentHeight;
-
-  const minX = 4;
-  const maxX = Math.max(minX, window.innerWidth - effectiveW - 4);
-  const minY = 60;
-  const maxY = Math.max(minY, window.innerHeight - effectiveH - 8);
-
-  return {
-    x: Math.round(Math.max(minX, Math.min(maxX, layout.x))),
-    y: Math.round(Math.max(minY, Math.min(maxY, layout.y))),
-    width,
-    height,
-  };
+export function loadIslandLayoutMode(): IslandLayoutMode {
+  try {
+    return localStorage.getItem(LAYOUT_STORAGE_KEY) === "tall" ? "tall" : "wide";
+  } catch {
+    return "wide";
+  }
 }
 
-/**
- * Calcul du redimensionnement depuis le coin inférieur gauche :
- * Le bord droit (origX + origWidth) reste fixe pendant que X et width s'ajustent.
- */
-export function computeBottomLeftResize(
-  origX: number,
-  origY: number,
-  origWidth: number,
-  origHeight: number,
-  dx: number,
-  dy: number
-): IslandLayout {
-  const rightEdge = origX + origWidth;
-  const maxAllowedW = Math.min(
-    Math.round(window.innerWidth * ISLAND_BOUNDS.maxWidthVw),
-    rightEdge - 4
-  );
-  const maxW = Math.max(ISLAND_BOUNDS.minWidth, maxAllowedW);
-
-  const maxAllowedH = Math.min(
-    Math.round(window.innerHeight * ISLAND_BOUNDS.maxHeightVh),
-    window.innerHeight - origY - 8
-  );
-  const maxH = Math.max(ISLAND_BOUNDS.minHeight, maxAllowedH);
-
-  const rawWidth = origWidth - dx;
-  const nextWidth = Math.round(
-    Math.max(ISLAND_BOUNDS.minWidth, Math.min(maxW, rawWidth))
-  );
-  const nextX = Math.round(rightEdge - nextWidth);
-
-  const rawHeight = origHeight + dy;
-  const nextHeight = Math.round(
-    Math.max(ISLAND_BOUNDS.minHeight, Math.min(maxH, rawHeight))
-  );
-
-  return {
-    x: nextX,
-    y: origY,
-    width: nextWidth,
-    height: nextHeight,
-  };
+export function saveIslandLayoutMode(mode: IslandLayoutMode): void {
+  try {
+    localStorage.setItem(LAYOUT_STORAGE_KEY, mode);
+  } catch {
+    // Stockage indisponible : on ignore
+  }
 }

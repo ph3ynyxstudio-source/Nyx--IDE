@@ -1,15 +1,12 @@
 .island {
   position: fixed;
-  left: 16px;
-  right: 16px;
+  left: max(16px, env(safe-area-inset-left));
+  right: auto;
   bottom: env(safe-area-inset-bottom, 16px);
   margin-bottom: max(env(safe-area-inset-bottom), 16px);
-  min-width: 280px;
-  min-height: 80px;
-  max-width: 95vw;
-  max-height: 40vh;
   z-index: 30;
   box-sizing: border-box;
+  overflow: hidden;
   background-color: var(--bg-card);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -18,14 +15,12 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 300ms ease-in-out;
 }
 
 .customPositioned {
-  right: auto;
   bottom: auto;
   margin-bottom: 0;
-  width: calc(100vw - 32px);
 }
 
 .anchoredState {
@@ -36,9 +31,9 @@
 .freeState {
   border: 1px solid color-mix(in srgb, var(--accent-warn) 80%, transparent);
   box-shadow: 0 14px 34px color-mix(in srgb, var(--bg-app) 94%, transparent);
-  padding-bottom: 22px;
 }
 
+/* Pas d'animation pendant le glissement : l'île suit le doigt instantanément. */
 .dragging {
   transition: none;
   border-color: var(--accent-warn);
@@ -58,18 +53,21 @@
 }
 
 .statusLabel {
+  flex: 1;
+  min-width: 0;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: color-mix(in srgb, var(--text-main) 65%, transparent);
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .dragHandle {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -83,20 +81,52 @@
   user-select: none;
 }
 
+.labelText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .gripDots {
   width: 15px;
   height: 15px;
   flex-shrink: 0;
 }
 
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.layoutToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 26px;
+  border-radius: 999px;
+  color: var(--accent-blue);
+  background-color: color-mix(in srgb, var(--accent-blue) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-blue) 45%, transparent);
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.layoutToggle:active {
+  transform: scale(0.93);
+  background-color: color-mix(in srgb, var(--accent-blue) 30%, transparent);
+}
+
 .pinButton {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
-  padding: 4px 10px;
+  height: 26px;
+  padding: 0 10px;
   border-radius: 999px;
   font-size: 11px;
-  margin-left: auto;
   flex-shrink: 0;
   transition: transform 0.15s ease, background-color 0.2s ease;
 }
@@ -131,15 +161,14 @@
 
 .actionsRow {
   flex: 1;
+  min-height: 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  align-items: stretch;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
 }
 
 .actionBtn {
-  min-height: 40px;
-  height: 100%;
+  min-height: 0;
   border-radius: 11px;
   background-color: color-mix(in srgb, var(--bg-carbon) 82%, transparent);
   border: 1px solid color-mix(in srgb, var(--text-main) 12%, transparent);
@@ -149,7 +178,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
   transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
@@ -158,29 +186,53 @@
   background-color: var(--bg-panel);
 }
 
+.keyboardActive {
+  background-color: color-mix(in srgb, var(--accent-blue) 25%, transparent);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+
 .mono {
   font-family: "JetBrains Mono", "Fira Code", monospace;
   letter-spacing: -0.02em;
 }
 
-.resizeHandle {
-  position: absolute;
-  bottom: 2px;
-  left: 2px;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px 10px 6px 14px;
-  background-color: color-mix(in srgb, var(--accent-blue) 16%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent-blue) 45%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: none;
-  user-select: none;
-  cursor: nesw-resize;
-  z-index: 5;
+/* ---------- Disposition verticale (tall) ---------- */
+
+.tall {
+  padding: 10px 8px;
 }
 
-.resizeHandle:active {
-  background-color: color-mix(in srgb, var(--accent-blue) 32%, transparent);
+.tall .topRow {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.tall .statusLabel,
+.tall .labelText {
+  display: none;
+}
+
+.tall .dragHandle {
+  flex: none;
+  justify-content: center;
+  padding: 6px 0;
+}
+
+.tall .controls {
+  justify-content: space-between;
+}
+
+.tall .pinButton {
+  padding: 0 8px;
+}
+
+.tall .pinDot {
+  display: none;
+}
+
+.tall .actionsRow {
+  grid-template-columns: 1fr;
+  grid-auto-rows: 1fr;
 }

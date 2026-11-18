@@ -1,16 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { PinButton } from "./PinButton";
-import { ResizeIcon } from "../Icons";
-import {
-  IslandLayout,
-  loadIslandLayout,
-  saveIslandLayout,
-  clampIslandLayout,
-  computeBottomLeftResize,
-} from "../../services/islandStorage";
+import { ToggleLayoutIcon, KeyboardIcon } from "../Icons";
+import { useFloatingIsland } from "../../services/useFloatingIsland";
 import styles from "./FloatingIsland.module.css";
 
-export type IslandPosition = IslandLayout;
+export type { IslandPosition } from "../../services/islandStorage";
 
 export interface FloatingIslandProps {
   isPinned: boolean;
@@ -19,6 +13,8 @@ export interface FloatingIslandProps {
   onSelectAll: () => void;
   onCopy: () => void;
   onPaste: () => void;
+  onToggleKeyboard?: () => void;
+  isKeyboardOpen?: boolean;
   feedbackText?: string | null;
 }
 
@@ -29,177 +25,43 @@ export const FloatingIsland: React.FC<FloatingIslandProps> = ({
   onSelectAll,
   onCopy,
   onPaste,
+  onToggleKeyboard,
+  isKeyboardOpen = false,
   feedbackText,
 }) => {
-  const islandRef = useRef<HTMLElement | null>(null);
-  const [savedLayout, setSavedLayout] = useState<IslandLayout | null>(() => loadIslandLayout());
-  const [liveLayout, setLiveLayout] = useState<IslandLayout | null>(null);
+  const {
+    islandRef,
+    layoutMode,
+    dims,
+    currentPos,
+    isDragging,
+    dragHandlers,
+    togglePin,
+    toggleLayout,
+  } = useFloatingIsland(isPinned, onTogglePin);
 
-  const dragSession = useRef<{
-    startX: number;
-    startY: number;
-    origX: number;
-    origY: number;
-    latest: IslandLayout;
-  } | null>(null);
+  const isTall = layoutMode === "tall";
 
-  const resizeSession = useRef<{
-    startX: number;
-    startY: number;
-    origX: number;
-    origY: number;
-    origW: number;
-    origH: number;
-    latest: IslandLayout;
-  } | null>(null);
-
-  const currentLayout = liveLayout ?? savedLayout;
-
-  const persistLayout = (next: IslandLayout) => {
-    const el = islandRef.current;
-    const w = el ? el.offsetWidth : Math.min(window.innerWidth - 32, 360);
-    const h = el ? el.offsetHeight : 96;
-    const clamped = clampIslandLayout(next, w, h);
-    setSavedLayout(clamped);
-    saveIslandLayout(clamped);
+  const inlineStyle: React.CSSProperties = {
+    width: `${dims.width}px`,
+    height: `${dims.height}px`,
+    ...(currentPos ? { left: `${currentPos.x}px`, top: `${currentPos.y}px` } : {}),
   };
 
-  useEffect(() => {
-    const stored = loadIslandLayout();
-    if (stored) {
-      const el = islandRef.current;
-      const w = el ? el.offsetWidth : Math.min(window.innerWidth - 32, 360);
-      const h = el ? el.offsetHeight : 96;
-      setSavedLayout(clampIslandLayout(stored, w, h));
-    }
-  }, []);
-
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (isPinned || e.touches.length === 0) return;
-    const touch = e.touches[0];
-    const rect = islandRef.current?.getBoundingClientRect();
-    const base: IslandLayout = {
-      x: currentLayout?.x ?? (rect ? Math.round(rect.left) : 16),
-      y: currentLayout?.y ?? (rect ? Math.round(rect.top) : 360),
-      width: currentLayout?.width ?? (rect ? Math.round(rect.width) : undefined),
-      height: currentLayout?.height ?? (rect ? Math.round(rect.height) : undefined),
-    };
-    dragSession.current = {
-      startX: touch.clientX,
-      startY: touch.clientY,
-      origX: base.x,
-      origY: base.y,
-      latest: base,
-    };
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (isPinned || !dragSession.current || e.touches.length === 0) return;
-    if (e.cancelable) e.preventDefault();
-    const touch = e.touches[0];
-    const el = islandRef.current;
-    const w = el ? el.offsetWidth : 340;
-    const h = el ? el.offsetHeight : 96;
-    const clamped = clampIslandLayout(
-      {
-        ...dragSession.current.latest,
-        x: dragSession.current.origX + (touch.clientX - dragSession.current.startX),
-        y: dragSession.current.origY + (touch.clientY - dragSession.current.startY),
-      },
-      w,
-      h
-    );
-    dragSession.current.latest = clamped;
-    setLiveLayout(clamped);
-  };
-
-  const handleTouchEnd = () => {
-    if (!dragSession.current) return;
-    const finalLayout = dragSession.current.latest;
-    dragSession.current = null;
-    setLiveLayout(null);
-    persistLayout(finalLayout);
-  };
-
-  const handleResizeStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    if (isPinned || e.touches.length === 0) return;
-    const touch = e.touches[0];
-    const rect = islandRef.current?.getBoundingClientRect();
-    const origX = currentLayout?.x ?? (rect ? Math.round(rect.left) : 16);
-    const origY = currentLayout?.y ?? (rect ? Math.round(rect.top) : 360);
-    const origW = currentLayout?.width ?? (rect ? Math.round(rect.width) : 320);
-    const origH = currentLayout?.height ?? (rect ? Math.round(rect.height) : 96);
-    resizeSession.current = {
-      startX: touch.clientX,
-      startY: touch.clientY,
-      origX,
-      origY,
-      origW,
-      origH,
-      latest: { x: origX, y: origY, width: origW, height: origH },
-    };
-  };
-
-  const handleResizeMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    if (isPinned || !resizeSession.current || e.touches.length === 0) return;
-    if (e.cancelable) e.preventDefault();
-    const touch = e.touches[0];
-    const s = resizeSession.current;
-    const next = computeBottomLeftResize(
-      s.origX,
-      s.origY,
-      s.origW,
-      s.origH,
-      touch.clientX - s.startX,
-      touch.clientY - s.startY
-    );
-    s.latest = next;
-    setLiveLayout(next);
-  };
-
-  const handleResizeEnd = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    if (!resizeSession.current) return;
-    const finalLayout = resizeSession.current.latest;
-    resizeSession.current = null;
-    setLiveLayout(null);
-    persistLayout(finalLayout);
-  };
-
-  const handlePinToggle = () => {
-    const rect = islandRef.current?.getBoundingClientRect();
-    const toSave: IslandLayout = {
-      x: currentLayout?.x ?? (rect ? Math.round(rect.left) : 16),
-      y: currentLayout?.y ?? (rect ? Math.round(rect.top) : 360),
-      width: currentLayout?.width ?? (rect ? Math.round(rect.width) : undefined),
-      height: currentLayout?.height ?? (rect ? Math.round(rect.height) : undefined),
-    };
-    setLiveLayout(null);
-    dragSession.current = null;
-    resizeSession.current = null;
-    persistLayout(toSave);
-    onTogglePin();
-  };
-
-  const inlineStyle: React.CSSProperties | undefined = currentLayout
-    ? {
-        left: `${currentLayout.x}px`,
-        top: `${currentLayout.y}px`,
-        ...(currentLayout.width !== undefined ? { width: `${currentLayout.width}px` } : {}),
-        ...(currentLayout.height !== undefined ? { height: `${currentLayout.height}px` } : {}),
-      }
-    : undefined;
+  const className = [
+    styles.island,
+    currentPos ? styles.customPositioned : "",
+    isTall ? styles.tall : styles.wide,
+    isPinned ? styles.anchoredState : styles.freeState,
+    isDragging ? styles.dragging : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <aside
       ref={islandRef}
-      className={`${styles.island} ${
-        currentLayout ? styles.customPositioned : ""
-      } ${isPinned ? styles.anchoredState : styles.freeState} ${
-        liveLayout ? styles.dragging : ""
-      }`}
+      className={className}
       style={inlineStyle}
       aria-label="Île flottante d'actions rapides"
     >
@@ -207,14 +69,7 @@ export const FloatingIsland: React.FC<FloatingIslandProps> = ({
         {isPinned ? (
           <span className={styles.statusLabel}>{feedbackText ?? "Capsule Ancrée"}</span>
         ) : (
-          <div
-            className={styles.dragHandle}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd}
-            title="Glisser pour déplacer l'île"
-          >
+          <div className={styles.dragHandle} {...dragHandlers} title="Glisser pour déplacer l'île">
             <svg className={styles.gripDots} viewBox="0 0 24 24" fill="currentColor">
               <circle cx="9" cy="6" r="1.8" />
               <circle cx="15" cy="6" r="1.8" />
@@ -223,11 +78,22 @@ export const FloatingIsland: React.FC<FloatingIslandProps> = ({
               <circle cx="9" cy="18" r="1.8" />
               <circle cx="15" cy="18" r="1.8" />
             </svg>
-            <span>{feedbackText ?? "Mode Libre · Glisser"}</span>
+            <span className={styles.labelText}>{feedbackText ?? "Mode Libre · Glisser"}</span>
           </div>
         )}
 
-        <PinButton isPinned={isPinned} onTogglePin={handlePinToggle} />
+        <div className={styles.controls}>
+          <button
+            type="button"
+            className={styles.layoutToggle}
+            onClick={toggleLayout}
+            title={isTall ? "Passer en disposition horizontale" : "Passer en disposition verticale"}
+            aria-label="Basculer l'orientation de l'île"
+          >
+            <ToggleLayoutIcon size={15} />
+          </button>
+          <PinButton isPinned={isPinned} onTogglePin={togglePin} />
+        </div>
       </div>
 
       <div className={styles.actionsRow}>
@@ -243,22 +109,16 @@ export const FloatingIsland: React.FC<FloatingIslandProps> = ({
         <button type="button" className={styles.actionBtn} onClick={onPaste}>
           Coller
         </button>
-      </div>
-
-      {!isPinned && (
-        <div
-          className={styles.resizeHandle}
-          onTouchStart={handleResizeStart}
-          onTouchMove={handleResizeMove}
-          onTouchEnd={handleResizeEnd}
-          onTouchCancel={handleResizeEnd}
-          title="Redimensionner l'île (coin bas-gauche)"
-          role="slider"
-          aria-label="Poignée de redimensionnement"
+        <button
+          type="button"
+          className={`${styles.actionBtn} ${isKeyboardOpen ? styles.keyboardActive : ""}`}
+          onClick={onToggleKeyboard}
+          title={isKeyboardOpen ? "Fermer le clavier" : "Ouvrir le clavier"}
+          aria-label="Clavier"
         >
-          <ResizeIcon size={15} />
-        </div>
-      )}
+          <KeyboardIcon size={16} />
+        </button>
+      </div>
     </aside>
   );
 };
